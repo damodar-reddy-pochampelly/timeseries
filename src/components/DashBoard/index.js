@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react'
 import socketIOClient from 'socket.io-client'
 import {v4 as uuidv4} from 'uuid'
 
-const ENDPOINT = 'http://localhost:3000' // Replace with your server's URL
+const ENDPOINT = 'https://timerseries.onrender.com' // Replace with your server's URL
 
 function App() {
   const [data, setData] = useState([])
