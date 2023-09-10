@@ -7,7 +7,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Connect to the socket.io server
-    const socket = io('https://timerseries.onrender.com/') // Replace with your server URL
+    const socket = io('https://timerseries.onrender.com') // Replace with your server URL
 
     // Listen for incoming data
     socket.on('data', incomingData => {
