@@ -1,42 +1,62 @@
-import {useEffect, useState} from 'react'
-import io from 'socket.io-client'
+import {useState, useEffect} from 'react'
+import socketIOClient from 'socket.io-client'
 import {v4 as uuidv4} from 'uuid'
 
-const Dashboard = () => {
+const ENDPOINT = 'http://localhost:3000' // Replace with your server's URL
+
+function App() {
   const [data, setData] = useState([])
+  const [successRate, setSuccessRate] = useState(0)
 
   useEffect(() => {
-    // Connect to the socket.io server
-    const socket = io('https://timerseries.onrender.com') // Replace with your server URL
+    const socket = socketIOClient(ENDPOINT)
 
-    // Listen for incoming data
-    socket.on('data', incomingData => {
-      // Update the data state with the received data
-      setData(incomingData)
+    socket.on('connect', () => {
+      console.log('Connected to server')
     })
 
-    // Clean up the socket connection when the component unmounts
+    socket.on('timeseriesData', newData => {
+      // Update data when new data is received
+      setData(newData)
+
+      // Calculate success rate
+      const totalDataPoints = data.length + 1 // Add 1 for the new data point
+      const validDataPoints = newData.filter(item => item.valid).length
+      const rate = (validDataPoints / totalDataPoints) * 100
+      setSuccessRate(rate.toFixed(2))
+    })
+
     return () => {
       socket.disconnect()
     }
-  }, [])
+  }, [data])
 
   return (
-    <div>
-      <h1>Real-Time Data Dashboard</h1>
-      <div className="data-container">
-        {data.map((item, index) => (
-          <div key={uuidv4()} className="data-item">
-            <strong>Data {index + 1}</strong>
-            <p>Name: {item.name}</p>
-            <p>Origin: {item.origin}</p>
-            <p>Destination: {item.destination}</p>
-            <p>Timestamp: {item.timestamp}</p>
-          </div>
-        ))}
-      </div>
+    <div className="App">
+      <h1>Time Series Data</h1>
+      <p>Success Rate: {successRate}%</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Origin</th>
+            <th>Destination</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map(item => (
+            <tr key={uuidv4()} className={item.valid ? 'valid' : 'invalid'}>
+              <td>{item.name}</td>
+              <td>{item.origin}</td>
+              <td>{item.destination}</td>
+              <td>{item.timestamp}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
 
-export default Dashboard
+export default App
